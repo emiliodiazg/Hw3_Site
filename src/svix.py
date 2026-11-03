@@ -62,9 +62,24 @@ def svix_squared(cdf):
     0.0401
     """
     ## TODO: Implement this function as specified in the docstring above.
-    raise NotImplementedError(
-        "Implement svix_squared (see HOMEWORK INSTRUCTIONS at the top of this file)"
-    )
+    # raise NotImplementedError(
+    #     "Implement svix_squared (see HOMEWORK INSTRUCTIONS at the top of this file)"
+    # )
+
+    grid = cdf.grid
+    forward = cdf.forward
+    tau = cdf.maturity_years
+    below = grid <= forward
+    above = grid > forward
+    # End the put integral and start the call integral exactly at R_f, so the
+    # sliver between the last grid point below and the first above is counted.
+    put_k = np.append(grid[below], forward)
+    put_v = np.append(cdf.put_grid[below], cdf.put(forward))
+    call_k = np.insert(grid[above], 0, forward)
+    call_v = np.insert(cdf.call_grid[above], 0, cdf.call(forward))
+    put_integral = np.trapezoid(put_v, put_k)
+    call_integral = np.trapezoid(call_v, call_k)
+    return float(2.0 / (tau * forward) * (put_integral + call_integral))
 
 
 def interpolate_variance(svix2_near, tau_near, svix2_far, tau_far, horizon_years=HORIZON_DAYS / 365.0):
